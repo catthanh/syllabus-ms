@@ -20,7 +20,7 @@ services:
     depends_on:
       - pg
   pg:
-    image: bitnami/postgresql:11-debian-9
+    image: postgres:14-alpine
     container_name: ${DATABASE_HOST}
     environment:
       POSTGRESQL_USERNAME: ${DATABASE_USER}
