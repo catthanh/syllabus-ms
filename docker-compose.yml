@@ -22,12 +22,15 @@ services:
   pg:
     image: postgres:14-alpine
     container_name: ${DATABASE_HOST}
+    restart: always
     environment:
-      POSTGRESQL_USERNAME: ${DATABASE_USER}
-      POSTGRESQL_PASSWORD: ${DATABASE_PASSWORD}
-      POSTGRESQL_DATABASE: ${DATABASE_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
     ports:
       - '${DATABASE_PORT}:${DATABASE_PORT}'
+    volumes:
+      - db:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -36,5 +39,5 @@ networks:
     driver: bridge
 
 volumes:
-  data:
+  db:
     driver: local
