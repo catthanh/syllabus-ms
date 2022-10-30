@@ -21,5 +21,8 @@ export default new DataSource({
   database: configService.get<string>('DATABASE_NAME'),
   migrations: ['dist/database/migrations/*.js'],
   namingStrategy: new SnakeNamingStrategy(),
-  entities: ['src/modules/**/*.entity.ts'],
+  entities: [
+    'src/modules/**/*.entity.ts',
+    'src/modules/**/entities/*.entity.ts',
+  ],
 });

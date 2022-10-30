@@ -1,8 +1,8 @@
 import { Request } from 'express';
 import { UserEntity } from '../../users/user.entity';
 
-interface RequestWithUser extends Request {
+interface AuthenticatedRequest extends Request {
   user: UserEntity;
 }
 
-export default RequestWithUser;
+export default AuthenticatedRequest;

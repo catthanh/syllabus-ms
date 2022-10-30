@@ -20,7 +20,10 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
         migrations: ['dist/database/migrations/*.js'],
         migrationsRun: true,
         namingStrategy: new SnakeNamingStrategy(),
-        entities: ['dist/modules/**/*.entity.js'],
+        entities: [
+          'dist/modules/**/*.entity.js',
+          'dist/modules/**/entities/*.entity.js',
+        ],
         autoLoadEntities: true,
       }),
     }),

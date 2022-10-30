@@ -11,15 +11,12 @@ export class UsersService {
     private usersRepository: Repository<UserEntity>,
   ) {}
 
-  async getByEmail(email: string): Promise<UserEntity> {
+  async getByUsername(email: string): Promise<UserEntity> {
     const user = await this.usersRepository.findOneBy({ username: email });
     if (user) {
       return user;
     }
-    throw new HttpException(
-      'User with this email does not exist',
-      HttpStatus.NOT_FOUND,
-    );
+    throw new HttpException('Username does not exist', HttpStatus.NOT_FOUND);
   }
 
   async create(userData: CreateUserDto) {

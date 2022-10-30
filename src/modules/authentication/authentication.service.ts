@@ -26,7 +26,7 @@ export class AuthenticationService {
     } catch (error) {
       if (error?.code === PostgresErrorCode.UniqueViolation) {
         throw new HttpException(
-          'User with that email already exists',
+          'Username already exists',
           HttpStatus.BAD_REQUEST,
         );
       }
@@ -42,7 +42,7 @@ export class AuthenticationService {
     plainTextPassword: string,
   ) {
     try {
-      const user = await this.usersService.getByEmail(username);
+      const user = await this.usersService.getByUsername(username);
       await this.verifyPassword(plainTextPassword, user.password);
       user.password = undefined;
       return user;
@@ -70,7 +70,7 @@ export class AuthenticationService {
     }
   }
 
-  public getCookieWithJwtToken(userId: number) {
+  public signJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
     console.log(token);
