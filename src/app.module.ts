@@ -6,6 +6,9 @@ import { AuthenticationModule } from './modules/authentication/authentication.mo
 import { ConfigModule } from '@nestjs/config';
 import configurationSchema from './config/configuration.schema';
 import { DatabaseModule } from './database/database.module';
+import { ReferenceMaterialsModule } from './modules/reference-materials/reference-materials.module';
+import { SyllabusesModule } from './modules/syllabuses/syllabuses.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,9 +22,12 @@ import { DatabaseModule } from './database/database.module';
       },
       isGlobal: true,
     }),
+    DatabaseModule,
     UsersModule,
     AuthenticationModule,
-    DatabaseModule,
+    SyllabusesModule,
+    ReferenceMaterialsModule,
+    DepartmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
