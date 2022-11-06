@@ -1,11 +1,13 @@
-import { IEntity } from '@modules/common/interface/base.entity.interface';
+import { IEntity } from '@common/interface/base.entity.interface';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { RoleDepartmentUser } from './role-department-user.entity';
 
 @Entity('users')
 export class UserEntity implements IEntity {
@@ -32,6 +34,12 @@ export class UserEntity implements IEntity {
     type: 'varchar',
   })
   lastName: string;
+
+  @OneToMany(
+    () => RoleDepartmentUser,
+    (roleDepartmentUser) => roleDepartmentUser.user,
+  )
+  roleDepartmentUser: RoleDepartmentUser[];
 
   @CreateDateColumn()
   createdAt: Date;

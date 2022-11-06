@@ -19,7 +19,7 @@ export default new DataSource({
   username: configService.get<string>('DATABASE_USER'),
   password: configService.get<string>('DATABASE_PASSWORD'),
   database: configService.get<string>('DATABASE_NAME'),
-  migrations: ['dist/database/migrations/*.js'],
+  migrations: ['src/database/migrations/*.ts'],
   namingStrategy: new SnakeNamingStrategy(),
   entities: [
     'src/modules/**/*.entity.ts',

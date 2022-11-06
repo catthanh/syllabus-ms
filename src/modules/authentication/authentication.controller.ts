@@ -1,5 +1,5 @@
 import { ResponseCode } from '@common/constants/http-code.enum';
-import { ResponseDto } from '@common/dto/response.dto.ts/base.response.dto';
+import { ResponseDto } from '@common/dto/response/base.response.dto';
 import { ResponseBuilder } from '@common/util/helper.util';
 import {
   Body,
@@ -8,6 +8,7 @@ import {
   HttpCode,
   Post,
   UseGuards,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -46,7 +47,7 @@ export class AuthenticationController {
     const { user } = request;
     const accessToken = this.authenticationService.signJwtToken(user.id);
     return new ResponseBuilder()
-      .withCode(ResponseCode.SUCCESS)
+      .withCode(HttpStatus.OK)
       .withMessage('Login successfully')
       .withData({ user, accessToken }, LoginRequestDto)
       .build();

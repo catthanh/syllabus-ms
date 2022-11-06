@@ -1,7 +1,7 @@
-import { ResponseDto } from '@common/dto/response.dto.ts/base.response.dto';
-import { UserResponseDto } from '@modules/users/dto/response/user.response.dto';
+import { ResponseDto } from '@common/dto/response/base.response.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { UserResponseDto } from 'src/modules/users/dto/response/user.response.dto';
 
 export class LoginResponseData {
   @ApiProperty()

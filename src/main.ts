@@ -11,7 +11,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
-  app.useGlobalPipes(new ValidationPipe({}));
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   await app.listen(configService.get('APP_PORT'), async () => {
     console.log(`Application is running on: ${await app.getUrl()}`);
   });
