@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -61,7 +62,7 @@ export class SyllabusesController {
     summary: 'Xóa đề cương',
     tags: ['Syllabuses'],
   })
-  @Post(':id/delete')
+  @Delete(':id/delete')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.syllabusesService.delete(id);
   }

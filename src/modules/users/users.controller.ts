@@ -1,9 +1,18 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
+import JwtAuthenticationGuard from '../authentication/guard/jwt-authentication.guard';
 import { PaginationQueryDto } from '../common/dto/request/pagination-query.request.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@UseGuards(JwtAuthenticationGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

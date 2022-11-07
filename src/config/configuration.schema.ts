@@ -4,7 +4,7 @@ export default Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   APP_HOST: Joi.string().default('backend'),
-  APP_PORT: Joi.number().default(3000),
+  PORT: Joi.number().default(3000),
   DATABASE_HOST: Joi.string().default('localhost'),
   DATABASE_PORT: Joi.number().default(5432),
   DATABASE_USERNAME: Joi.string().default('postgres'),

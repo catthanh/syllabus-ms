@@ -8,6 +8,7 @@ import {
   ResponseBuilder,
 } from '../common/util/helper.util';
 import { DepartmentEntity } from './department.entity';
+import { CreateDepartmentRequestDto } from './dto/request/create-department.request.dto';
 import { DepartmentResponseDto } from './dto/response/department.response.dto';
 
 @Injectable()
@@ -47,6 +48,19 @@ export class DepartmentsService {
       .withCode(HttpStatus.OK)
       .withMessage('Get department successfully')
       .withData(department, DepartmentResponseDto)
+      .build();
+  }
+
+  async create(
+    request: CreateDepartmentRequestDto,
+  ): Promise<ResponseDto<DepartmentResponseDto>> {
+    const department = this.departmentsRepository.create(request);
+
+    const result = await this.departmentsRepository.save(department);
+    return new ResponseBuilder<DepartmentResponseDto>()
+      .withCode(HttpStatus.CREATED)
+      .withMessage('Create department successfully')
+      .withData(result, DepartmentResponseDto)
       .build();
   }
 }
