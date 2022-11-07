@@ -13,13 +13,6 @@ steps:
     args: ['push', 'gcr.io/$PROJECT_ID/syllabus-ms:$COMMIT_SHA']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
-     args:
-      - 'run'
-      - 'deploy'
-      - 'syllabus-ms'
-      - '--image'
-      - 'gcr.io/$PROJECT_ID/syllabus-ms:$COMMIT_SHA'
-      - '--region'
-      - 'asia-southeast1'
+     args: ['run', 'deploy', 'syllabus-ms', '--image', 'gcr.io/$PROJECT_ID/syllabus-ms:$COMMIT_SHA', '--region', 'asia-southeast1']
 images:
   - 'asia-southeast1-docker.pkg.dev/$PROJECT_ID/syllabus-ms/syllabus-ms:$COMMIT_SHA'
