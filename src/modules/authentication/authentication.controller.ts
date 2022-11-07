@@ -1,5 +1,3 @@
-import { ResponseCode } from '@common/constants/http-code.enum';
-import { ResponseDto } from '@common/dto/response/base.response.dto';
 import { ResponseBuilder } from '@common/util/helper.util';
 import {
   Body,
@@ -10,16 +8,14 @@ import {
   UseGuards,
   HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-  PartialType,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthenticationService } from './authentication.service';
 import { LoginRequestDto } from './dto/request/login.request.dto';
 import { RegisterRequestDto } from './dto/request/register.request.dto';
-import { LoginResponseDto } from './dto/response/login.response.dto';
+import {
+  LoginResponseData,
+  LoginResponseDto,
+} from './dto/response/login.response.dto';
 import { LocalAuthenticationGuard } from './guard/authentication.guard';
 import AuthenticatedRequest from './interface/authenticated-request';
 @Controller('authentication')
@@ -49,7 +45,7 @@ export class AuthenticationController {
     return new ResponseBuilder()
       .withCode(HttpStatus.OK)
       .withMessage('Login successfully')
-      .withData({ user, accessToken }, LoginRequestDto)
+      .withData({ user, accessToken }, LoginResponseData)
       .build();
   }
 }

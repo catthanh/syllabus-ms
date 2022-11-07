@@ -1,7 +1,16 @@
-import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { PaginationQueryDto } from '../common/dto/request/pagination-query.request.dto';
 import { DepartmentsService } from './departments.service';
+import { CreateDepartmentRequestDto } from './dto/request/create-department.request.dto';
 
 @Controller('departments')
 export class DepartmentsController {
@@ -23,5 +32,14 @@ export class DepartmentsController {
   @Get(':id')
   async get(@Param('id', ParseIntPipe) id: number) {
     return this.departmentsService.get(id);
+  }
+
+  @ApiOperation({
+    summary: 'Tạo khoa',
+    tags: ['Departments'],
+  })
+  @Post()
+  async create(@Body() body: CreateDepartmentRequestDto) {
+    return this.departmentsService.create(body);
   }
 }

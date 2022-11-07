@@ -27,6 +27,16 @@ export class UsersService {
     throw new HttpException('Username does not exist', HttpStatus.NOT_FOUND);
   }
 
+  async getUserById(id: number): Promise<UserEntity> {
+    const user = await this.usersRepository.findOne({
+      where: { id },
+    });
+    if (user) {
+      return user;
+    }
+    throw new HttpException('User does not exist', HttpStatus.NOT_FOUND);
+  }
+
   async create(userData: CreateUserDto) {
     const newUser = await this.usersRepository.create(userData);
     await this.usersRepository.save(newUser);
