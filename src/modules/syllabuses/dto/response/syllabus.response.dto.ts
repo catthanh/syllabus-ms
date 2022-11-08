@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
+import { DepartmentResponseDto } from '../../../departments/dto/response/department.response.dto';
 import { ReferenceMaterialResponseDto } from '../../../reference-materials/dto/response/reference-material.response.dto';
 import { UserResponseDto } from '../../../users/dto/response/user.response.dto';
 import { CourseOutcomeStandard } from '../../interface/course-outcome-standard.interface';
@@ -17,6 +18,10 @@ import {
 } from '../request/create-syllabus.request.dto';
 
 export class SyllabusResponseDto {
+  @ApiProperty()
+  @Expose()
+  id: string;
+
   @ApiProperty()
   @Expose()
   @Type(() => UserResponseDto)
@@ -55,7 +60,8 @@ export class SyllabusResponseDto {
 
   @ApiProperty()
   @Expose()
-  department: number;
+  @Type(() => CourseScheduleDto)
+  department: DepartmentResponseDto;
 
   @ApiProperty()
   @Expose()
