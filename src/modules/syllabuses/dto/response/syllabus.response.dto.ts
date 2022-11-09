@@ -60,7 +60,7 @@ export class SyllabusResponseDto {
 
   @ApiProperty()
   @Expose()
-  @Type(() => CourseScheduleDto)
+  @Type(() => DepartmentResponseDto)
   department: DepartmentResponseDto;
 
   @ApiProperty()
