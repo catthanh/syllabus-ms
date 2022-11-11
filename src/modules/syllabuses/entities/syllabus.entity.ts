@@ -16,9 +16,10 @@ import { CourseOutcomeStandard } from '../interface/course-outcome-standard.inte
 import { CourseSchedule } from '../interface/course-schedule.interface';
 import { CourseTestSchedule } from '../interface/course-test.interface';
 import { TeachingSchedule } from '../interface/teaching-schedule.interface';
-import { CourseType } from '../syllabuses.constants';
+import { CourseType, SyllabusStatusEnum } from '../syllabuses.constants';
 import { CourseTimeDistribution } from '../interface/course-time-distribution.interface';
 import { DepartmentEntity } from '../../departments/department.entity';
+import { CourseEntity } from '../../courses/course.entity';
 
 @Entity('syllabuses')
 export class SyllabusEntity {
@@ -32,15 +33,32 @@ export class SyllabusEntity {
   @JoinTable()
   otherLecturers: UserEntity[];
 
-  @Column({
-    type: 'varchar',
-  })
-  courseName: string;
+  @ManyToOne(() => CourseEntity)
+  course: CourseEntity;
+
+  @Column()
+  version: number;
 
   @Column({
-    type: 'varchar',
+    type: 'enum',
+    enum: SyllabusStatusEnum,
   })
-  courseCode: string;
+  status: number;
+
+  @Column({
+    type: 'boolean',
+  })
+  isHidden: boolean;
+
+  // @Column({
+  //   type: 'varchar',
+  // })
+  // courseName: string;
+
+  // @Column({
+  //   type: 'varchar',
+  // })
+  // courseCode: string;
 
   @Column({
     type: 'int',
