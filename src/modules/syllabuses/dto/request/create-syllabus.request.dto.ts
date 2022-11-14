@@ -111,12 +111,17 @@ export class CreateSyllabusRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  courseName: string;
+  @IsInt()
+  courseId: number;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  courseCode: string;
+  // @ApiProperty()
+  // @IsNotEmpty()
+  // courseName: string;
+
+  // @ApiProperty()
+  // @IsNotEmpty()
+  // @IsString()
+  // courseCode: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -128,8 +133,8 @@ export class CreateSyllabusRequestDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  prerequisiteId: number;
+  @IsArray()
+  prerequisiteIds: number[];
 
   @ApiProperty()
   @IsNotEmpty()

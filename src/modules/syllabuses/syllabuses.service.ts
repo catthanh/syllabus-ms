@@ -15,6 +15,8 @@ import { SyllabusResponseDto } from './dto/response/syllabus.response.dto';
 import { UpdateSyllabusDto } from './dto/request/update-syllabus.request.dto';
 import { PaginationResponseDto } from '../common/dto/response/pagination.response.dto';
 import { PaginationQueryDto } from '../common/dto/request/pagination-query.request.dto';
+import { CourseEntity } from '../courses/course.entity';
+import _ from 'lodash';
 
 @Injectable()
 export class SyllabusesService {
@@ -25,6 +27,8 @@ export class SyllabusesService {
     private readonly referenceMaterialRepository: Repository<ReferenceMaterialsEntity>,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(CourseEntity)
+    private readonly courseRepository: Repository<CourseEntity>,
   ) {}
 
   async create(
@@ -56,12 +60,12 @@ export class SyllabusesService {
         HttpStatus.NOT_FOUND,
       );
     }
-    let prerequisite = null;
-    if (request.prerequisiteId) {
-      prerequisite = await this.syllabusRepository.findOneBy({
-        id: request.prerequisiteId,
+    let prerequisiteCourses = null;
+    if (!_.isEmpty(request.prerequisiteIds)) {
+      prerequisiteCourses = await this.courseRepository.findBy({
+        id: In(request.prerequisiteIds),
       });
-      if (!prerequisite) {
+      if (prerequisiteCourses.length !== request.prerequisiteIds.length) {
         throw new HttpException(
           'Môn tiên quyết không tồn tại',
           HttpStatus.NOT_FOUND,
@@ -69,10 +73,18 @@ export class SyllabusesService {
       }
     }
 
-    const courseCode = request.courseCode;
-    if (await this.syllabusRepository.findOneBy({ courseCode })) {
-      throw new HttpException('Mã môn học đã tồn tại', HttpStatus.BAD_REQUEST);
+    const course = await this.courseRepository.findOneBy({
+      id: request.courseId,
+    });
+
+    if (!course) {
+      throw new HttpException('Môn học không tồn tại', HttpStatus.NOT_FOUND);
     }
+
+    // const courseCode = request.courseCode;
+    // if (await this.syllabusRepository.findOneBy({ courseCode })) {
+    //   throw new HttpException('Mã môn học đã tồn tại', HttpStatus.BAD_REQUEST);
+    // }
 
     const queryRunner =
       this.syllabusRepository.manager.connection.createQueryRunner();
@@ -80,9 +92,10 @@ export class SyllabusesService {
     await queryRunner.startTransaction();
     try {
       const syllabus = this.syllabusRepository.create(request);
+      syllabus.course = course;
       syllabus.primaryLecturer = primaryLecturer;
       syllabus.otherLecturers = otherLecturers;
-      syllabus.prerequisite = prerequisite;
+      syllabus.prerequisiteCourses = prerequisiteCourses;
       const savedReferenceMaterials = await queryRunner.manager.save(
         referenceMaterials,
       );
@@ -111,7 +124,7 @@ export class SyllabusesService {
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
@@ -169,17 +182,25 @@ export class SyllabusesService {
       );
     }
 
-    let prerequisite = null;
-    if (request.prerequisiteId) {
-      prerequisite = await this.syllabusRepository.findOneBy({
-        id: request.prerequisiteId,
+    let prerequisiteCourses = null;
+    if (!_.isEmpty(request.prerequisiteIds)) {
+      prerequisiteCourses = await this.courseRepository.findBy({
+        id: In(request.prerequisiteIds),
       });
-      if (!prerequisite) {
+      if (prerequisiteCourses.length !== request.prerequisiteIds.length) {
         throw new HttpException(
           'Môn tiên quyết không tồn tại',
           HttpStatus.NOT_FOUND,
         );
       }
+    }
+
+    const course = await this.courseRepository.findOneBy({
+      id: request.courseId,
+    });
+
+    if (!course) {
+      throw new HttpException('Môn học không tồn tại', HttpStatus.NOT_FOUND);
     }
 
     const queryRunner =
@@ -189,7 +210,8 @@ export class SyllabusesService {
     try {
       syllabus.primaryLecturer = primaryLecturer;
       syllabus.otherLecturers = otherLecturers;
-      syllabus.prerequisite = prerequisite;
+      syllabus.course = course;
+      syllabus.prerequisiteCourses = prerequisiteCourses;
       await queryRunner.manager.remove(oldReferenceMaterials);
       const savedReferenceMaterials = await queryRunner.manager.save(
         referenceMaterials,

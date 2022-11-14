@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CourseEntity } from '../courses/course.entity';
 import { ReferenceMaterialsEntity } from '../reference-materials/reference-materials.entity';
 import { UserEntity } from '../users/entities/user.entity';
 import { SyllabusEntity } from './entities/syllabus.entity';
@@ -12,6 +13,7 @@ import { SyllabusesService } from './syllabuses.service';
       SyllabusEntity,
       ReferenceMaterialsEntity,
       UserEntity,
+      CourseEntity,
     ]),
   ],
   providers: [SyllabusesService],
