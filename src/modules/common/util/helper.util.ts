@@ -25,9 +25,13 @@ export class ResponseBuilder<T> {
     return this;
   }
   withData(data: any, type: Type<T>): ResponseBuilder<T> {
+    console.log(type);
+
     this.response.data = plainToInstance<T, any>(type, data, {
       excludeExtraneousValues: true,
     });
+    console.log(this.response.data);
+
     return this;
   }
   build(): ResponseDto<T> {

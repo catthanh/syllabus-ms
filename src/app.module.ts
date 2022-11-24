@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { ReferenceMaterialsModule } from './modules/reference-materials/reference-materials.module';
 import { SyllabusesModule } from './modules/syllabuses/syllabuses.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { ProgramsModule } from './modules/programs/programs.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,6 +29,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
     SyllabusesModule,
     ReferenceMaterialsModule,
     DepartmentsModule,
+    ProgramsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
