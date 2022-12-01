@@ -5,8 +5,6 @@ COPY . ./app
 
 WORKDIR /app
 
-EXPOSE 9000
-
 # Development build stage
 FROM common-build-stage as development-build-stage
 
