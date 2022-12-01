@@ -8,6 +8,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,6 +20,7 @@ import { TeachingSchedule } from '../interface/teaching-schedule.interface';
 import { CourseType } from '../syllabuses.constants';
 import { CourseTimeDistribution } from '../interface/course-time-distribution.interface';
 import { DepartmentEntity } from '../../departments/department.entity';
+import { GroupCoursesEntity } from '../../programs/entities/program-courses.entity';
 
 @Entity('syllabuses')
 export class SyllabusEntity {
@@ -136,4 +138,7 @@ export class SyllabusEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => GroupCoursesEntity, (groupCourse) => groupCourse.syllabus)
+  groupCourses: GroupCoursesEntity;
 }
