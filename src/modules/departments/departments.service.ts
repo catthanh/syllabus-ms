@@ -1,15 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PaginationQueryDto } from '../common/dto/request/pagination-query.request.dto';
-import { ResponseDto } from '../common/dto/response/base.response.dto';
-import {
-  PaginationResponseBuilder,
-  ResponseBuilder,
-} from '../common/util/helper.util';
 import { DepartmentEntity } from './department.entity';
 import { CreateDepartmentRequestDto } from './dto/request/create-department.request.dto';
-import { DepartmentResponseDto } from './dto/response/department.response.dto';
+import { UpdateDepartmentBody } from './dto/request/update-department.request.dto';
 
 @Injectable()
 export class DepartmentsService {
@@ -18,7 +13,14 @@ export class DepartmentsService {
     private readonly departmentsRepository: Repository<DepartmentEntity>,
   ) {}
 
-  async getList(request: PaginationQueryDto) {
+  /**
+   *
+   * @param request
+   * @returns [data, page, limit, total]
+   */
+  async getList(
+    request: PaginationQueryDto,
+  ): Promise<[DepartmentEntity[], number, number, number]> {
     const { page, limit } = request;
     const queryBuilder =
       this.departmentsRepository.createQueryBuilder('department');
@@ -27,40 +29,43 @@ export class DepartmentsService {
       queryBuilder.skip((page - 1) * limit).take(limit);
     }
 
-    const [departments, total] = await queryBuilder.getManyAndCount();
+    const [data, total] = await queryBuilder.getManyAndCount();
 
-    return new PaginationResponseBuilder<DepartmentResponseDto>()
-      .withCode(HttpStatus.OK)
-      .withMessage('Get list of departments successfully')
-      .withData(departments, DepartmentResponseDto)
-      .withPage(page)
-      .withLimit(limit)
-      .withTotal(total)
-      .build();
+    return [data, page, limit, total];
   }
 
-  async get(id: number): Promise<ResponseDto<DepartmentResponseDto>> {
+  async get(id: number): Promise<DepartmentEntity> {
     const department = await this.departmentsRepository.findOne({
       where: { id },
     });
 
-    return new ResponseBuilder<DepartmentResponseDto>()
-      .withCode(HttpStatus.OK)
-      .withMessage('Get department successfully')
-      .withData(department, DepartmentResponseDto)
-      .build();
+    if (!department) {
+      throw new HttpException('Department not found', HttpStatus.NOT_FOUND);
+    }
+    return department;
   }
 
-  async create(
-    request: CreateDepartmentRequestDto,
-  ): Promise<ResponseDto<DepartmentResponseDto>> {
+  async create(request: CreateDepartmentRequestDto): Promise<DepartmentEntity> {
     const department = this.departmentsRepository.create(request);
 
-    const result = await this.departmentsRepository.save(department);
-    return new ResponseBuilder<DepartmentResponseDto>()
-      .withCode(HttpStatus.CREATED)
-      .withMessage('Create department successfully')
-      .withData(result, DepartmentResponseDto)
-      .build();
+    return await this.departmentsRepository.save(department);
+  }
+
+  async update(
+    id: number,
+    request: UpdateDepartmentBody,
+  ): Promise<DepartmentEntity> {
+    const department = await this.departmentsRepository.findOne({
+      where: { id },
+    });
+
+    if (!department) {
+      throw new HttpException('Department not found', HttpStatus.NOT_FOUND);
+    }
+
+    return await this.departmentsRepository.save({
+      ...department,
+      ...request,
+    });
   }
 }

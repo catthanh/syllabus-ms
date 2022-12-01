@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { DepartmentEntity } from '../../departments/department.entity';
-import { RoleEntity } from './role.entity';
+import { RoleEnum } from '../role.enum';
 import { UserEntity } from './user.entity';
 
 @Entity('roles_departments_users')
@@ -8,8 +8,11 @@ export class RoleDepartmentUser {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
-  roleId!: number;
+  @Column({
+    enum: RoleEnum,
+    default: RoleEnum.STUDENT,
+  })
+  role!: RoleEnum;
 
   @Column()
   userId!: number;
@@ -17,15 +20,12 @@ export class RoleDepartmentUser {
   @Column()
   departmentId!: number;
 
-  @ManyToOne(() => RoleEntity, (role) => role.roleDepartmentUser)
-  role!: RoleDepartmentUser;
-
-  @ManyToOne(() => UserEntity, (user) => user.roleDepartmentUser)
-  user!: RoleDepartmentUser;
+  @ManyToOne(() => UserEntity, (user) => user.userToDepartments)
+  user!: UserEntity;
 
   @ManyToOne(
     () => DepartmentEntity,
-    (department) => department.roleDepartmentUser,
+    (department) => department.departmentToUsers,
   )
-  department!: RoleDepartmentUser;
+  department!: DepartmentEntity;
 }

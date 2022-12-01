@@ -26,9 +26,11 @@
     "migrate:run": "npm run typeorm migration:run -- -d ./src/config/database.config.ts",
     "migrate:generate": "npm run typeorm -- -d ./src/config/database.config.ts migration:generate ./src/database/migrations/$npm_package_name",
     "migrate:create": "npm run typeorm -- migration:create ./src/database/migrations/$npm_package_name",
-    "migrate:revert": "npm run typeorm -- -d ./src/config/database.config.ts migration:revert"
+    "migrate:revert": "npm run typeorm -- -d ./src/config/database.config.ts migration:revert",
+    "seed": "ts-node ./node_modules/typeorm-extension/dist/cli/index.js seed -r ./src/config -d database.config"
   },
   "dependencies": {
+    "@casl/ability": "^6.3.2",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
     "@nestjs/core": "^9.0.0",
@@ -54,9 +56,11 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "typeorm": "^0.3.10",
+    "typeorm-extension": "^2.2.12",
     "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
+    "@faker-js/faker": "^7.6.0",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",

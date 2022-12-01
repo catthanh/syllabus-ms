@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
+import { UserToDepartments } from '../request/create-user.request.dto';
 
 export class UserResponseDto {
   @ApiProperty()
@@ -12,11 +13,12 @@ export class UserResponseDto {
 
   @ApiProperty()
   @Expose()
-  firstName: string;
+  name: string;
 
   @ApiProperty()
   @Expose()
-  lastName: string;
+  @Type(() => UserToDepartments)
+  userToDepartments: UserToDepartments;
 
   @ApiProperty()
   @Expose()

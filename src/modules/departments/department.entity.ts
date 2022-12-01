@@ -22,7 +22,7 @@ export class DepartmentEntity {
     () => RoleDepartmentUser,
     (roleDepartmentUser) => roleDepartmentUser.department,
   )
-  roleDepartmentUser: RoleDepartmentUser[];
+  departmentToUsers: RoleDepartmentUser[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
@@ -109,13 +109,15 @@ export class CreateSyllabusRequestDto {
   @IsInt({ each: true })
   otherLecturerIds: number[];
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsNotEmpty()
+  @IsInt()
+  courseId: number;
+
+  @ApiPropertyOptional()
   courseName: string;
 
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
+  @ApiPropertyOptional()
   courseCode: string;
 
   @ApiProperty()
@@ -128,8 +130,8 @@ export class CreateSyllabusRequestDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  prerequisiteId: number;
+  @IsArray()
+  prerequisiteIds: number[];
 
   @ApiProperty()
   @IsNotEmpty()
@@ -203,7 +205,8 @@ export class CreateSyllabusRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @ValidateNested()
-  midtermAssessmentSchedule: CourseTestScheduleDto;
+  @Type(() => CourseTestScheduleDto)
+  midtermAssessmentSchedule: CourseTestScheduleDto[];
 
   @ApiProperty()
   @IsNotEmpty()

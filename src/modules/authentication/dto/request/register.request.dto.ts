@@ -1,22 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
+import { CreateUserDto } from '../../../users/dto/request/create-user.request.dto';
 
-export class RegisterRequestDto {
-  @ApiProperty({
-    example: '19020443',
-  })
-  @IsString()
-  username: string;
-
-  @ApiProperty()
-  @IsString()
-  password: string;
-
-  @ApiProperty()
-  @IsString()
-  firstName: string;
-
-  @ApiProperty()
-  @IsString()
-  lastName: string;
-}
+export class RegisterRequestDto extends CreateUserDto {}
