@@ -6,9 +6,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery } from '@nestjs/swagger';
 import JwtAuthenticationGuard from '../authentication/guard/jwt-authentication.guard';
-import { PaginationQueryDto } from '../common/dto/request/pagination-query.request.dto';
+import {
+  FilterQueryDto,
+  PaginationQueryDto,
+} from '../common/dto/request/pagination-query.request.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -20,8 +23,23 @@ export class UsersController {
     summary: 'Danh sách người dùng',
     tags: ['Users'],
   })
+  @ApiQuery({
+    name: 'filterBy',
+    type: FilterQueryDto,
+    example: [
+      {
+        filterBy: 'roleId',
+        filterValue: '1',
+      },
+      {
+        filterBy: 'departmentId',
+        filterValue: '1',
+      },
+    ],
+  })
   @Get()
   async getList(@Query() query: PaginationQueryDto) {
+    console.log('sdasdasd');
     return this.usersService.getList(query);
   }
 
@@ -31,6 +49,7 @@ export class UsersController {
   })
   @Get(':id')
   async get(@Param('id', ParseIntPipe) id: number) {
+    console.log('sdasdasd');
     return this.usersService.get(id);
   }
 }

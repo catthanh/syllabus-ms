@@ -26,3 +26,9 @@ export enum AssessmentMethod {
   INVIDUAL_ASSIGNMENT = 4,
   GRADE_COMPLETION = 5,
 }
+
+export enum SyllabusStatusEnum {
+  PENDING,
+  APPROVED,
+  REJECTED,
+}

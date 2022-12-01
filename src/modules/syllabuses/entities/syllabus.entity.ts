@@ -16,9 +16,11 @@ import { CourseOutcomeStandard } from '../interface/course-outcome-standard.inte
 import { CourseSchedule } from '../interface/course-schedule.interface';
 import { CourseTestSchedule } from '../interface/course-test.interface';
 import { TeachingSchedule } from '../interface/teaching-schedule.interface';
-import { CourseType } from '../syllabuses.constants';
+import { CourseType, SyllabusStatusEnum } from '../syllabuses.constants';
 import { CourseTimeDistribution } from '../interface/course-time-distribution.interface';
 import { DepartmentEntity } from '../../departments/department.entity';
+import { CourseEntity } from '../../courses/course.entity';
+import { ApproveTimeline } from '../interface/approve-timeline.interface';
 
 @Entity('syllabuses')
 export class SyllabusEntity {
@@ -32,15 +34,30 @@ export class SyllabusEntity {
   @JoinTable()
   otherLecturers: UserEntity[];
 
-  @Column({
-    type: 'varchar',
-  })
-  courseName: string;
+  @ManyToOne(() => CourseEntity)
+  course: CourseEntity;
+
+  @Column()
+  version: number;
+
+  @Column()
+  versionName: string;
 
   @Column({
-    type: 'varchar',
+    type: 'jsonb',
   })
-  courseCode: string;
+  approveTimeline: ApproveTimeline;
+
+  @Column({
+    type: 'enum',
+    enum: SyllabusStatusEnum,
+  })
+  status: number;
+
+  @Column({
+    type: 'boolean',
+  })
+  isHidden: boolean;
 
   @Column({
     type: 'int',
@@ -52,8 +69,9 @@ export class SyllabusEntity {
   })
   courseTimeDistribution: CourseTimeDistribution;
 
-  @ManyToOne(() => SyllabusEntity)
-  prerequisite: SyllabusEntity;
+  @ManyToMany(() => CourseEntity)
+  @JoinTable()
+  prerequisiteCourses: CourseEntity[];
 
   @Column({
     type: 'enum',
@@ -124,7 +142,7 @@ export class SyllabusEntity {
   @Column({
     type: 'jsonb',
   })
-  midtermAssessmentSchedule: CourseTestSchedule;
+  midtermAssessmentSchedule: CourseTestSchedule[];
 
   @Column({
     type: 'jsonb',

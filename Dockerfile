@@ -5,13 +5,12 @@ COPY . ./app
 
 WORKDIR /app
 
-RUN npm install
-
-
 EXPOSE 9000
 
 # Development build stage
 FROM common-build-stage as development-build-stage
+
+RUN npm install
 
 ENV NODE_ENV development
 
@@ -19,6 +18,8 @@ CMD ["npm", "run", "start:dev"]
 
 # Production build stage
 FROM common-build-stage as production-build-stage
+
+RUN npm install
 
 RUN npm run build
 

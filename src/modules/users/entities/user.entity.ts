@@ -27,19 +27,18 @@ export class UserEntity implements IEntity {
 
   @Column({
     type: 'varchar',
+    nullable: true,
   })
-  firstName: string;
-
-  @Column({
-    type: 'varchar',
-  })
-  lastName: string;
+  name: string;
 
   @OneToMany(
     () => RoleDepartmentUser,
     (roleDepartmentUser) => roleDepartmentUser.user,
+    {
+      cascade: true,
+    },
   )
-  roleDepartmentUser: RoleDepartmentUser[];
+  userToDepartments: RoleDepartmentUser[];
 
   @CreateDateColumn()
   createdAt: Date;
