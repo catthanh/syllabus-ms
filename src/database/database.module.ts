@@ -25,6 +25,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
           'dist/modules/**/entities/*.entity.js',
         ],
         autoLoadEntities: true,
+        synchronize: true,
       }),
     }),
   ],
