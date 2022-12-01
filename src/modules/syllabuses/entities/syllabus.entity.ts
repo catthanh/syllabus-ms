@@ -34,7 +34,9 @@ export class SyllabusEntity {
   @JoinTable()
   otherLecturers: UserEntity[];
 
-  @ManyToOne(() => CourseEntity)
+  @ManyToOne(() => CourseEntity, {
+    cascade: true,
+  })
   course: CourseEntity;
 
   @Column()
