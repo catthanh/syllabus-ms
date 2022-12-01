@@ -17,7 +17,7 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         logger: new DatabaseLogger(),
-        synchronize: true,
+        // synchronize: true,
         migrations: ['dist/database/migrations/*.js'],
         migrationsRun: true,
         namingStrategy: new SnakeNamingStrategy(),
