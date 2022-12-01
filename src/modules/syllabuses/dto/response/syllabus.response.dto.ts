@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose, Transform, Type } from 'class-transformer';
+import { CourseResponseDto } from '../../../courses/dto/response/cousre.response.dto';
 import { DepartmentResponseDto } from '../../../departments/dto/response/department.response.dto';
 import { ReferenceMaterialResponseDto } from '../../../reference-materials/dto/response/reference-material.response.dto';
 import { UserResponseDto } from '../../../users/dto/response/user.response.dto';
@@ -53,8 +54,9 @@ export class SyllabusResponseDto {
 
   @ApiPropertyOptional()
   @Expose()
-  @Type(() => SyllabusResponseDto)
-  prerequisite: SyllabusResponseDto;
+  @Transform(({ obj }) => obj.prerequisiteCourses)
+  @Type(() => CourseResponseDto)
+  prerequisite: CourseResponseDto[];
 
   @ApiProperty()
   @Expose()

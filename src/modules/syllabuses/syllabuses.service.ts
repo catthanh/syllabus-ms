@@ -114,7 +114,10 @@ export class SyllabusesService {
     await queryRunner.startTransaction();
     try {
       const syllabus = this.syllabusRepository.create(request);
-      syllabus.course = course;
+      if (course) {
+        const tempSavedCourse = await queryRunner.manager.save(course);
+        syllabus.course = tempSavedCourse;
+      }
       syllabus.primaryLecturer = primaryLecturer;
       syllabus.otherLecturers = otherLecturers;
       syllabus.prerequisiteCourses = prerequisiteCourses;
@@ -153,8 +156,10 @@ export class SyllabusesService {
         'otherLecturers',
         'prerequisiteCourses',
         'referenceMaterials',
+        'course',
       ],
     });
+    console.log(syllabus);
     if (!syllabus) {
       throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
     }
@@ -222,9 +227,21 @@ export class SyllabusesService {
       }
     }
 
-    const course = await this.courseRepository.findOneBy({
-      id: request.courseId,
-    });
+    let course = null;
+    if (request.courseId) {
+      course = await this.courseRepository.findOneBy({
+        id: request.courseId,
+      });
+
+      if (!course) {
+        throw new HttpException('Môn học không tồn tại', HttpStatus.NOT_FOUND);
+      }
+    } else {
+      course = this.courseRepository.create({
+        name: request.courseName,
+        code: request.courseCode,
+      });
+    }
 
     if (!course) {
       throw new HttpException('Môn học không tồn tại', HttpStatus.NOT_FOUND);
@@ -237,7 +254,10 @@ export class SyllabusesService {
     try {
       syllabus.primaryLecturer = primaryLecturer;
       syllabus.otherLecturers = otherLecturers;
-      syllabus.course = course;
+      if (course) {
+        const tempSavedCourse = await queryRunner.manager.save(course);
+        syllabus.course = tempSavedCourse;
+      }
       syllabus.prerequisiteCourses = prerequisiteCourses;
       await queryRunner.manager.remove(oldReferenceMaterials);
       const savedReferenceMaterials = await queryRunner.manager.save(
@@ -270,6 +290,7 @@ export class SyllabusesService {
         'otherLecturers',
         'prerequisite',
         'referenceMaterials',
+        'course',
       ],
     });
     if (!syllabus) {
@@ -308,11 +329,15 @@ export class SyllabusesService {
       'primaryLecturer',
     );
     queryBuilder.leftJoinAndSelect('syllabus.otherLecturers', 'otherLecturers');
-    queryBuilder.leftJoinAndSelect('syllabus.prerequisite', 'prerequisite');
+    queryBuilder.leftJoinAndSelect(
+      'syllabus.prerequisiteCourses',
+      'prerequisiteCourses',
+    );
     queryBuilder.leftJoinAndSelect(
       'syllabus.referenceMaterials',
       'referenceMaterials',
     );
+    queryBuilder.leftJoinAndSelect('syllabus.course', 'course');
     if (request.search) {
       queryBuilder.where(
         new Brackets((qb) => {
@@ -377,7 +402,7 @@ export class SyllabusesService {
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
@@ -399,7 +424,7 @@ export class SyllabusesService {
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
@@ -421,7 +446,7 @@ export class SyllabusesService {
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
