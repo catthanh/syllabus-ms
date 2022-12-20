@@ -6,6 +6,7 @@ import { UserResponseDto } from '../../../users/dto/response/user.response.dto';
 import {
   ApprovalRequestStatusEnum,
   EntityTypeEnum,
+  RequestTypeEnum,
 } from '../../approval-request.enum';
 
 export class ApprovalRequestResponseDto {
@@ -16,6 +17,10 @@ export class ApprovalRequestResponseDto {
   @ApiProperty()
   @Expose()
   entityType: EntityTypeEnum;
+
+  @ApiProperty()
+  @Expose()
+  requestType: RequestTypeEnum;
 
   @ApiProperty()
   @Expose()
