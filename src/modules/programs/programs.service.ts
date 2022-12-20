@@ -30,7 +30,7 @@ export class ProgramsService {
 
   async create(request: CreateProgramRequestDto) {
     // check program exist
-
+    console.log(request);
     const existProgram = await this.programRepository.find({
       where: {
         programCode: request.programCode,
@@ -63,6 +63,7 @@ export class ProgramsService {
       where: {
         id: In(uniq(courseIds)),
       },
+      relations: ['prerequisiteCourses'],
     });
     console.log('aaaaaaaaaaaaaaa');
 
@@ -74,14 +75,14 @@ export class ProgramsService {
     const program = this.programRepository.create({
       ...request,
     });
-
+    delete program.groups;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.startTransaction();
     try {
       console.log('sasaassssssssssssssssssssss');
+      const queue = [request.groups];
       const tempProgram = await queryRunner.manager.save(program);
       console.log('sasaassssssssssssssssssssss');
-      const queue = [request.groups];
       const courseGroupEntitiesByLevel = [];
       const courseGroupParentByLevel = [];
       courseGroupParentByLevel.push(queue[0].map(() => null));
@@ -92,7 +93,9 @@ export class ProgramsService {
             name: courseGroup.name,
             program: tempProgram,
           });
-
+          courseGroupEntity.courses = courseGroup.courses.map(
+            (course) => existCoursesMap[course.id],
+          );
           courseGroupEntity.parent =
             courseGroupParentByLevel[courseGroupParentByLevel.length - 1][
               index
@@ -118,21 +121,21 @@ export class ProgramsService {
       }
       await queryRunner.commitTransaction();
       const roots = courseGroupEntitiesByLevel[0];
+      console.log(roots);
       const trees = await Promise.all(
         roots.map((root) =>
           this.courseGroupRepository.findDescendantsTree(root, {
-            relations: ['courses'],
+            relations: ['courses', 'courses.prerequisiteCourses'],
           }),
         ),
       );
       tempProgram.groups = trees;
-      console.log(trees);
 
       return tempProgram;
     } catch (error) {
       console.log(error);
       await queryRunner.rollbackTransaction();
-      return new HttpException(
+      throw new HttpException(
         'Internal server error',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -148,18 +151,103 @@ export class ProgramsService {
     if (!program) {
       throw new NotFoundException('Program not found');
     }
-    if (program.status === ProgramStatusEnum.APPROVED) {
-      throw new HttpException(
-        'Không thể cập nhật chương trình đã được duyệt',
-        HttpStatus.BAD_REQUEST,
-      );
+
+    // check course exist
+    const queue = [...request.groups];
+    const courseIds = [];
+    while (queue.length) {
+      const courseGroup = queue.shift();
+      if (courseGroup.courses) {
+        courseIds.push(...courseGroup.courses.map((course) => course.id));
+      }
+      if (courseGroup.groups) {
+        queue.push(...courseGroup.groups);
+      }
     }
+    const existCourses = await this.syllabusRepository.find({
+      where: {
+        id: In(uniq(courseIds)),
+      },
+      relations: ['prerequisiteCourses'],
+    });
+    console.log('aaaaaaaaaaaaaaa');
+
+    if (existCourses.length !== uniq(courseIds).length) {
+      throw new NotFoundException('Không tìm thấy môn học');
+    }
+    const existCoursesMap = keyBy(existCourses, 'id');
 
     const updatedProgram = this.programRepository.create({
       ...program,
       ...request,
     });
-    return await this.programRepository.save(updatedProgram);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.startTransaction();
+    try {
+      console.log('sasaassssssssssssssssssssss');
+      const queue = [request.groups];
+      const tempProgram = await queryRunner.manager.save(updatedProgram);
+      console.log('sasaassssssssssssssssssssss');
+      const courseGroupEntitiesByLevel = [];
+      const courseGroupParentByLevel = [];
+      courseGroupParentByLevel.push(queue[0].map(() => null));
+      while (queue.length) {
+        const courseGroups = queue.shift();
+        const courseGroupEntities = courseGroups.map((courseGroup, index) => {
+          const courseGroupEntity = this.courseGroupRepository.create({
+            id: courseGroup.id,
+            name: courseGroup.name,
+            program: tempProgram,
+          });
+          courseGroupEntity.courses = courseGroup.courses.map(
+            (course) => existCoursesMap[course.id],
+          );
+          courseGroupEntity.parent =
+            courseGroupParentByLevel[courseGroupParentByLevel.length - 1][
+              index
+            ];
+          return courseGroupEntity;
+        });
+        const saved = await queryRunner.manager.save(courseGroupEntities);
+        courseGroupEntitiesByLevel.push(saved);
+        queue.push([]);
+        courseGroupParentByLevel.push([]);
+        courseGroups.forEach((courseGroup, index) => {
+          if (courseGroup.groups) {
+            queue[queue.length - 1].push(...courseGroup.groups);
+            courseGroupParentByLevel[courseGroupParentByLevel.length - 1].push(
+              ...courseGroup.groups.map(() => saved[index]),
+            );
+          }
+        });
+        if (queue[queue.length - 1].length === 0) {
+          queue.pop();
+          courseGroupParentByLevel.pop();
+        }
+      }
+      await queryRunner.commitTransaction();
+      const roots = courseGroupEntitiesByLevel[0];
+      console.log(roots);
+      const trees = await Promise.all(
+        roots.map((root) =>
+          this.courseGroupRepository.findDescendantsTree(root, {
+            relations: ['courses', 'courses.prerequisiteCourses'],
+          }),
+        ),
+      );
+      tempProgram.groups = trees;
+
+      return tempProgram;
+    } catch (error) {
+      console.log(error);
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async delete(id: number) {
@@ -175,17 +263,18 @@ export class ProgramsService {
   async get(id: number) {
     const program = await this.programRepository.findOne({
       where: { id },
-      relations: ['groups'],
+      relations: ['groups', 'groups.courses',  'groups.courses.prerequisiteCourses'],
     });
     const roots = program.groups;
     const trees = await Promise.all(
       roots.map((root) =>
         this.courseGroupRepository.findDescendantsTree(root, {
-          relations: ['courses', 'courses.prequisiteCourses'],
+          relations: ['courses', 'courses.prerequisiteCourses'],
         }),
       ),
     );
     program.groups = trees;
+    console.log(roots);
     if (!program) {
       throw new NotFoundException('Program not found');
     }

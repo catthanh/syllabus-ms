@@ -39,9 +39,9 @@ export class ApprovalRequestService {
       throw new HttpException('Invalid approverId', 400);
     }
 
-    if (request.status === ApprovalRequestStatusEnum.APPROVED) {
-      throw new HttpException('Request already approved', 400);
-    }
+    // if (request.status === ApprovalRequestStatusEnum.APPROVED) {
+    //   throw new HttpException('Request already approved', 400);
+    // }
     request.reviewer = approver;
     request.comment = comment;
     request.status = ApprovalRequestStatusEnum.APPROVED;
@@ -49,7 +49,7 @@ export class ApprovalRequestService {
       switch (request.entityType) {
         case EntityTypeEnum.SYLLABUS:
           if (request.requestType === RequestTypeEnum.CREATE) {
-            this.syllabusService.create(request.request as any, true);
+            await this.syllabusService.create(request.request as any, true);
           }
           if (request.requestType === RequestTypeEnum.UPDATE) {
             this.syllabusService.update(
@@ -64,6 +64,7 @@ export class ApprovalRequestService {
           break;
       }
     } catch (error) {
+      console.log(error);
       throw new HttpException("Can't approve", 400);
     }
 

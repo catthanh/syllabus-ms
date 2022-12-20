@@ -1,13 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsString, ValidateNested } from 'class-validator';
 
 export class Course {
+  @IsInt()
   @ApiProperty()
   id: number;
 }
 
 export class CourseGroupRequestDto {
+  @IsInt()
+  @ApiProperty()
+  id?: number;
+
+  @IsString()
   @ApiProperty()
   name: string;
 
@@ -17,39 +23,47 @@ export class CourseGroupRequestDto {
 
   @ApiProperty()
   @Type(() => Course)
+  @IsArray()
+  @ValidateNested({ each: true })
   courses: Course[];
 }
 
 export class CreateProgramRequestDto {
   @ApiProperty()
-  majorId: number;
-
-  @ApiProperty()
+  @IsString()
   vietnameseProgramName: string;
 
   @ApiProperty()
+  @IsString()
   englishProgramName: string;
 
   @ApiProperty()
+  @IsString()
   programCode: string;
 
   @ApiProperty()
+  @IsString()
   degree: string;
 
   @ApiProperty()
+  @IsInt()
   yearOf: number;
 
+  @IsString()
   @ApiProperty()
   englishDegreeName: string;
 
   @ApiProperty()
+  @IsString()
   vietnameseDegreeName: string;
 
   @ApiProperty()
+  @IsString()
   standardOutput: string;
 
   @ApiProperty()
   @Type(() => CourseGroupRequestDto)
+  @IsArray()
   @ValidateNested({ each: true })
   groups: CourseGroupRequestDto[];
 }
