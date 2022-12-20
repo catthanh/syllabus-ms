@@ -112,7 +112,8 @@ export class CreateSyllabusRequestDto {
   @ApiPropertyOptional()
   courseName: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
+  @IsString()
   courseCode: string;
 
   @ApiProperty()

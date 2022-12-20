@@ -132,8 +132,10 @@ export class SyllabusesService {
         'otherLecturers',
         'prerequisiteCourses',
         'referenceMaterials',
+        'course',
       ],
     });
+    console.log(syllabus);
     if (!syllabus) {
       throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
     }
@@ -248,6 +250,7 @@ export class SyllabusesService {
         'otherLecturers',
         'prerequisiteCourses',
         'referenceMaterials',
+        'course',
       ],
     });
     if (!syllabus) {
@@ -294,6 +297,7 @@ export class SyllabusesService {
       'syllabus.referenceMaterials',
       'referenceMaterials',
     );
+    queryBuilder.leftJoinAndSelect('syllabus.course', 'course');
     if (request.search) {
       queryBuilder.where(
         new Brackets((qb) => {
