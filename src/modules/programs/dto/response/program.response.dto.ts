@@ -2,22 +2,22 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import { SyllabusResponseDto } from '../../../syllabuses/dto/response/syllabus.response.dto';
 
-export class CourseWithPrequisiteRequestDto extends SyllabusResponseDto {
-  @ApiProperty()
-  prequisiteCourses: SyllabusResponseDto[];
-}
-
 export class CourseGroupResponseDto {
   @ApiProperty()
+  @Expose()
   name: string;
 
+  @Expose({
+    name: 'groups',
+  })
   @ApiProperty()
   @Type(() => CourseGroupResponseDto)
-  groups: CourseGroupResponseDto[];
+  children: CourseGroupResponseDto[];
 
   @ApiProperty()
-  @Type(() => CourseWithPrequisiteRequestDto)
-  courses: CourseWithPrequisiteRequestDto[];
+  @Expose()
+  @Type(() => SyllabusResponseDto)
+  courses: SyllabusResponseDto[];
 }
 export class ProgramResponseDto {
   @ApiProperty()

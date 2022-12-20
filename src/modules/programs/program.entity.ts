@@ -43,7 +43,7 @@ export class ProgramEntity {
   @Column()
   programCode: string;
 
-  @OneToMany(() => CourseGroupEntity, (courseGroup) => courseGroup.parent, {
+  @OneToMany(() => CourseGroupEntity, (courseGroup) => courseGroup.program, {
     cascade: true,
   })
   groups: CourseGroupEntity[];
