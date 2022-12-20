@@ -8,3 +8,9 @@ export enum ApprovalRequestStatusEnum {
   APPROVED = 'approved',
   REJECTED = 'rejected',
 }
+
+export enum RequestTypeEnum {
+  CREATE = 'create',
+  UPDATE = 'update',
+  HIDE = 'hide',
+}
