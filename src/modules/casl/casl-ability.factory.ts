@@ -25,7 +25,7 @@ export class CaslAbilityFactory {
       can(ActionEnum.Read, 'all');
       can(ActionEnum.Create, 'all');
       can(ActionEnum.Update, 'all');
-      can(ActionEnum.Delete, 'all');
+      can(ActionEnum.Request, 'all');
       can(ActionEnum.Hidden, 'all');
     } else {
       can(ActionEnum.Read, 'all');

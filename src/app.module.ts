@@ -9,11 +9,10 @@ import { DatabaseModule } from './database/database.module';
 import { ReferenceMaterialsModule } from './modules/reference-materials/reference-materials.module';
 import { SyllabusesModule } from './modules/syllabuses/syllabuses.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
-import { CoursesModule } from './modules/courses/courses.module';
 import { CaslModule } from './modules/casl/casl.module';
 import { MeetingNotesModule } from './modules/meeting-notes/meeting-notes.module';
 import { ProgramModule } from './modules/programs/programs.module';
-import { MajorsModule } from './modules/majors/majors.module';
+import { ApprovalRequestModule } from './modules/approval-request/approval-request.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -33,12 +32,11 @@ import { MajorsModule } from './modules/majors/majors.module';
     SyllabusesModule,
     ReferenceMaterialsModule,
     DepartmentsModule,
-    CoursesModule,
     CaslModule,
     MeetingNotesModule,
     ProgramModule,
-    MajorsModule,
     MeetingNotesModule,
+    ApprovalRequestModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,7 +1,24 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { CourseResponseDto } from '../../../courses/dto/response/cousre.response.dto';
+import { SyllabusResponseDto } from '../../../syllabuses/dto/response/syllabus.response.dto';
 
+export class CourseWithPrequisiteRequestDto extends SyllabusResponseDto {
+  @ApiProperty()
+  prequisiteCourses: SyllabusResponseDto[];
+}
+
+export class CourseGroupResponseDto {
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  @Type(() => CourseGroupResponseDto)
+  groups: CourseGroupResponseDto[];
+
+  @ApiProperty()
+  @Type(() => CourseWithPrequisiteRequestDto)
+  courses: CourseWithPrequisiteRequestDto[];
+}
 export class ProgramResponseDto {
   @ApiProperty()
   @Expose()
@@ -9,11 +26,35 @@ export class ProgramResponseDto {
 
   @ApiProperty()
   @Expose()
-  name: string;
+  vietnameseProgramName: string;
 
   @ApiProperty()
   @Expose()
-  code: string;
+  englishProgramName: string;
+
+  @ApiProperty()
+  @Expose()
+  programCode: string;
+
+  @ApiProperty()
+  @Expose()
+  degree: string;
+
+  @ApiProperty()
+  @Expose()
+  yearOf: string;
+
+  @ApiProperty()
+  @Expose()
+  englishDegreeName: string;
+
+  @ApiProperty()
+  @Expose()
+  vietnameseDegreeName: string;
+
+  @ApiProperty()
+  @Expose()
+  standardOutput: string;
 
   @ApiProperty()
   @Expose()
@@ -21,12 +62,8 @@ export class ProgramResponseDto {
 
   @ApiProperty()
   @Expose()
-  major: string;
-
-  @ApiProperty()
-  @Expose()
-  @Type(() => CourseResponseDto)
-  courses: CourseResponseDto[];
+  @Type(() => CourseGroupResponseDto)
+  groups: CourseGroupResponseDto[];
 
   @ApiProperty()
   @Expose()

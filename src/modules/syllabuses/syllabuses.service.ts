@@ -15,10 +15,16 @@ import { SyllabusResponseDto } from './dto/response/syllabus.response.dto';
 import { UpdateSyllabusDto } from './dto/request/update-syllabus.request.dto';
 import { PaginationResponseDto } from '../common/dto/response/pagination.response.dto';
 import { PaginationQueryDto } from '../common/dto/request/pagination-query.request.dto';
-import { CourseEntity } from '../courses/course.entity';
 import * as _ from 'lodash';
 import { SyllabusStatusEnum } from './syllabuses.constants';
-import { ApproveTimeline } from './interface/approve-timeline.interface';
+import { RoleEnum } from '../users/role.enum';
+import { ApprovalRequestEntity } from '../approval-request/approval-request.entity';
+import { UserResponseDto } from '../users/dto/response/user.response.dto';
+import {
+  ApprovalRequestStatusEnum,
+  EntityTypeEnum,
+} from '../approval-request/approval-request.enum';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class SyllabusesService {
@@ -29,31 +35,23 @@ export class SyllabusesService {
     private readonly referenceMaterialRepository: Repository<ReferenceMaterialsEntity>,
     @InjectRepository(UserEntity)
     private readonly usersRepository: Repository<UserEntity>,
-    @InjectRepository(CourseEntity)
-    private readonly courseRepository: Repository<CourseEntity>,
+    @InjectRepository(ApprovalRequestEntity)
+    private readonly approvalRequestRepository: Repository<ApprovalRequestEntity>,
   ) {}
 
   async create(request: CreateSyllabusRequestDto): Promise<SyllabusEntity> {
-    let course = null;
-    if (request.courseId) {
-      course = await this.courseRepository.findOneBy({
-        id: request.courseId,
-      });
-
-      if (!course) {
-        throw new HttpException('Môn học không tồn tại', HttpStatus.NOT_FOUND);
-      }
-    } else {
-      course = this.courseRepository.create({
-        name: request.courseName,
-        code: request.courseCode,
-      });
+    const existCode = await this.syllabusRepository.findOne({
+      where: {
+        courseCode: request.courseCode,
+        status: SyllabusStatusEnum.DRAFT,
+      },
+    });
+    if (existCode) {
+      throw new HttpException('Mã môn học đã tồn tại', HttpStatus.BAD_REQUEST);
     }
-
-    // @TODO: LOAD prequisite courses
     let prerequisiteCourses = null;
     if (!_.isEmpty(request.prerequisiteIds)) {
-      prerequisiteCourses = await this.courseRepository.findBy({
+      prerequisiteCourses = await this.syllabusRepository.findBy({
         id: In(request.prerequisiteIds),
       });
       if (prerequisiteCourses.length !== request.prerequisiteIds.length) {
@@ -74,6 +72,9 @@ export class SyllabusesService {
 
     const primaryLecturer = await this.usersRepository.findOneBy({
       id: request.primaryLecturerId,
+      userToDepartments: {
+        role: RoleEnum.LECTURER,
+      },
     });
     if (!primaryLecturer) {
       throw new HttpException(
@@ -83,6 +84,9 @@ export class SyllabusesService {
     }
     const otherLecturers = await this.usersRepository.findBy({
       id: In(request.otherLecturerIds),
+      userToDepartments: {
+        role: RoleEnum.LECTURER,
+      },
     });
     if (otherLecturers.length !== request.otherLecturerIds.length) {
       throw new HttpException(
@@ -90,42 +94,17 @@ export class SyllabusesService {
         HttpStatus.NOT_FOUND,
       );
     }
-
-    const versionYear = new Date().getFullYear();
-    const newestSyllabus = await this.syllabusRepository.findOne({
-      where: {
-        course: {
-          id: request.courseId,
-        },
-      },
-      order: { version: 'DESC' },
-    });
-
-    const version = newestSyllabus ? newestSyllabus.version + 1 : 1;
-    const versionName = `${versionYear}-${version}`;
-
-    const approveTimeline = {
-      requestedAt: new Date(),
-      //requestedBy:
-    };
     const queryRunner =
       this.syllabusRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
       const syllabus = this.syllabusRepository.create(request);
-      syllabus.course = course;
       syllabus.primaryLecturer = primaryLecturer;
       syllabus.otherLecturers = otherLecturers;
       syllabus.prerequisiteCourses = prerequisiteCourses;
-      syllabus.version = version;
-      syllabus.versionName = versionName;
-      syllabus.status = SyllabusStatusEnum.PENDING;
+      syllabus.status = SyllabusStatusEnum.DRAFT;
       syllabus.isHidden = false;
-      syllabus.approveTimeline = Object.assign(
-        {},
-        approveTimeline,
-      ) as ApproveTimeline;
       const savedReferenceMaterials = await queryRunner.manager.save(
         referenceMaterials,
       );
@@ -181,6 +160,12 @@ export class SyllabusesService {
     if (!syllabus) {
       throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
     }
+    if (syllabus.status !== SyllabusStatusEnum.DRAFT) {
+      throw new HttpException(
+        'Chỉ có thể sửa bản nháp',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const oldReferenceMaterials = syllabus.referenceMaterials;
     const referenceMaterials = request.referenceMaterials.map(
       (referenceMaterial) => {
@@ -211,7 +196,7 @@ export class SyllabusesService {
 
     let prerequisiteCourses = null;
     if (!_.isEmpty(request.prerequisiteIds)) {
-      prerequisiteCourses = await this.courseRepository.findBy({
+      prerequisiteCourses = await this.syllabusRepository.findBy({
         id: In(request.prerequisiteIds),
       });
       if (prerequisiteCourses.length !== request.prerequisiteIds.length) {
@@ -222,29 +207,22 @@ export class SyllabusesService {
       }
     }
 
-    const course = await this.courseRepository.findOneBy({
-      id: request.courseId,
-    });
-
-    if (!course) {
-      throw new HttpException('Môn học không tồn tại', HttpStatus.NOT_FOUND);
-    }
-
     const queryRunner =
       this.syllabusRepository.manager.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      syllabus.primaryLecturer = primaryLecturer;
-      syllabus.otherLecturers = otherLecturers;
-      syllabus.course = course;
-      syllabus.prerequisiteCourses = prerequisiteCourses;
+      const newSyllabus = this.syllabusRepository.create(request);
+      newSyllabus.id = id;
+      newSyllabus.primaryLecturer = primaryLecturer;
+      newSyllabus.otherLecturers = otherLecturers;
+      newSyllabus.prerequisiteCourses = prerequisiteCourses;
       await queryRunner.manager.remove(oldReferenceMaterials);
       const savedReferenceMaterials = await queryRunner.manager.save(
         referenceMaterials,
       );
       syllabus.referenceMaterials = savedReferenceMaterials;
-      const result = await queryRunner.manager.save(syllabus);
+      const result = await queryRunner.manager.save(newSyllabus);
       await queryRunner.commitTransaction();
       return new ResponseBuilder<SyllabusResponseDto>()
         .withCode(HttpStatus.OK)
@@ -254,7 +232,7 @@ export class SyllabusesService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw new HttpException(
-        'Something went wrong while creating syllabus',
+        'Lỗi cập nhật đề cương',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     } finally {
@@ -268,7 +246,7 @@ export class SyllabusesService {
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
@@ -308,7 +286,10 @@ export class SyllabusesService {
       'primaryLecturer',
     );
     queryBuilder.leftJoinAndSelect('syllabus.otherLecturers', 'otherLecturers');
-    queryBuilder.leftJoinAndSelect('syllabus.prerequisite', 'prerequisite');
+    queryBuilder.leftJoinAndSelect(
+      'syllabus.prerequisiteCourses',
+      'prerequisiteCourses',
+    );
     queryBuilder.leftJoinAndSelect(
       'syllabus.referenceMaterials',
       'referenceMaterials',
@@ -373,18 +354,27 @@ export class SyllabusesService {
 
   async approve(id: number): Promise<ResponseDto<SyllabusResponseDto>> {
     const syllabus = await this.syllabusRepository.findOne({
-      where: { id },
+      where: { id, status: SyllabusStatusEnum.DRAFT },
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
     if (!syllabus) {
-      throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
+      throw new HttpException('Không tồn tại bản nháp', HttpStatus.NOT_FOUND);
     }
     syllabus.status = SyllabusStatusEnum.APPROVED;
+    const currentSyllabus = await this.syllabusRepository.findOne({
+      where: {
+        courseCode: syllabus.courseCode,
+        status: SyllabusStatusEnum.APPROVED,
+      },
+    });
+    if (currentSyllabus) {
+      syllabus.id = currentSyllabus.id;
+    } else delete syllabus.id;
     const result = await this.syllabusRepository.save(syllabus);
     return new ResponseBuilder<SyllabusResponseDto>()
       .withCode(HttpStatus.OK)
@@ -393,35 +383,13 @@ export class SyllabusesService {
       .build();
   }
 
-  async reject(id: number): Promise<ResponseDto<SyllabusResponseDto>> {
-    const syllabus = await this.syllabusRepository.findOne({
-      where: { id },
-      relations: [
-        'primaryLecturer',
-        'otherLecturers',
-        'prerequisite',
-        'referenceMaterials',
-      ],
-    });
-    if (!syllabus) {
-      throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
-    }
-    syllabus.status = SyllabusStatusEnum.REJECTED;
-    const result = await this.syllabusRepository.save(syllabus);
-    return new ResponseBuilder<SyllabusResponseDto>()
-      .withCode(HttpStatus.OK)
-      .withMessage('Từ chối thành công')
-      .withData(result, SyllabusResponseDto)
-      .build();
-  }
-
   async hide(id: number) {
     const syllabus = await this.syllabusRepository.findOne({
-      where: { id },
+      where: { id, status: SyllabusStatusEnum.APPROVED },
       relations: [
         'primaryLecturer',
         'otherLecturers',
-        'prerequisite',
+        'prerequisiteCourses',
         'referenceMaterials',
       ],
     });
@@ -433,6 +401,84 @@ export class SyllabusesService {
     return new ResponseBuilder<SyllabusResponseDto>()
       .withCode(HttpStatus.OK)
       .withMessage('Ẩn thành công')
+      .withData(result, SyllabusResponseDto)
+      .build();
+  }
+
+  async show(id: number) {
+    const syllabus = await this.syllabusRepository.findOne({
+      where: { id, status: SyllabusStatusEnum.APPROVED },
+      relations: [
+        'primaryLecturer',
+        'otherLecturers',
+        'prerequisiteCourses',
+        'referenceMaterials',
+      ],
+    });
+    if (!syllabus) {
+      throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
+    }
+    syllabus.isHidden = false;
+    const result = await this.syllabusRepository.save(syllabus);
+    return new ResponseBuilder<SyllabusResponseDto>()
+      .withCode(HttpStatus.OK)
+      .withMessage('Hiện thành công')
+      .withData(result, SyllabusResponseDto)
+      .build();
+  }
+
+  async createApprovalRequest(id: number, user: UserResponseDto) {
+    if (user.userToDepartments.every((x) => x.role !== RoleEnum.SPECIALIST)) {
+      throw new HttpException('Không có quyền', HttpStatus.FORBIDDEN);
+    }
+    const requester = await this.usersRepository.findOne({
+      where: { id: user.id },
+      relations: ['userToDepartments'],
+    });
+    const syllabus = await this.syllabusRepository.findOne({
+      where: { id },
+      relations: [
+        'primaryLecturer',
+        'otherLecturers',
+        'prerequisiteCourses',
+        'referenceMaterials',
+      ],
+    });
+    if (!syllabus) {
+      throw new HttpException('Không tồn tại', HttpStatus.NOT_FOUND);
+    }
+    if (syllabus.status !== SyllabusStatusEnum.DRAFT)
+      throw new HttpException('Không thể tạo yêu cầu', HttpStatus.BAD_REQUEST);
+    const approvalRequest = new ApprovalRequestEntity();
+    approvalRequest.draftEntity = plainToInstance(
+      SyllabusResponseDto,
+      syllabus,
+    );
+    const currentSyllabus = await this.syllabusRepository.findOne({
+      where: {
+        courseCode: syllabus.courseCode,
+        status: SyllabusStatusEnum.APPROVED,
+      },
+      relations: [
+        'primaryLecturer',
+        'otherLecturers',
+        'prerequisiteCourses',
+        'referenceMaterials',
+      ],
+    });
+    approvalRequest.currentEntity = plainToInstance(
+      SyllabusResponseDto,
+      currentSyllabus,
+    );
+    approvalRequest.entityId = syllabus.id;
+    approvalRequest.entityType = EntityTypeEnum.SYLLABUS;
+    approvalRequest.requester = requester;
+    approvalRequest.status = ApprovalRequestStatusEnum.PENDING;
+    const req = await this.approvalRequestRepository.save(approvalRequest);
+    const result = await this.syllabusRepository.save(syllabus);
+    return new ResponseBuilder<SyllabusResponseDto>()
+      .withCode(HttpStatus.OK)
+      .withMessage('Tạo yêu cầu thành công')
       .withData(result, SyllabusResponseDto)
       .build();
   }

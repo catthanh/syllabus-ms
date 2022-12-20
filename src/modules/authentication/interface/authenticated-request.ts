@@ -1,8 +1,8 @@
 import { Request } from 'express';
-import { UserEntity } from '../../users/entities/user.entity';
+import { UserResponseDto } from '../../users/dto/response/user.response.dto';
 
 interface AuthenticatedRequest extends Request {
-  user: UserEntity;
+  user: UserResponseDto;
 }
 
 export default AuthenticatedRequest;

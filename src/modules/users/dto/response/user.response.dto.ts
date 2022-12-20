@@ -1,7 +1,26 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { UserToDepartments } from '../request/create-user.request.dto';
+import { RoleEnum } from '../../role.enum';
 
+export class Department {
+  @ApiProperty()
+  @Expose()
+  id: number;
+
+  @ApiProperty()
+  @Expose()
+  name: string;
+}
+export class UserToDepartments {
+  @ApiProperty()
+  @Expose()
+  role: RoleEnum;
+
+  @ApiProperty()
+  @Expose()
+  @Type(() => Department)
+  department: Department;
+}
 export class UserResponseDto {
   @ApiProperty()
   @Expose()
@@ -18,7 +37,7 @@ export class UserResponseDto {
   @ApiProperty()
   @Expose()
   @Type(() => UserToDepartments)
-  userToDepartments: UserToDepartments;
+  userToDepartments: UserToDepartments[];
 
   @ApiProperty()
   @Expose()
