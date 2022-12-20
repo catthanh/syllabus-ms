@@ -132,7 +132,6 @@ export class SyllabusesService {
         'otherLecturers',
         'prerequisiteCourses',
         'referenceMaterials',
-        'course',
       ],
     });
     console.log(syllabus);
@@ -250,7 +249,6 @@ export class SyllabusesService {
         'otherLecturers',
         'prerequisiteCourses',
         'referenceMaterials',
-        'course',
       ],
     });
     if (!syllabus) {
@@ -297,7 +295,6 @@ export class SyllabusesService {
       'syllabus.referenceMaterials',
       'referenceMaterials',
     );
-    queryBuilder.leftJoinAndSelect('syllabus.course', 'course');
     if (request.search) {
       queryBuilder.where(
         new Brackets((qb) => {
