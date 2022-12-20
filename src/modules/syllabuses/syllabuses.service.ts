@@ -23,6 +23,7 @@ import { UserResponseDto } from '../users/dto/response/user.response.dto';
 import {
   ApprovalRequestStatusEnum,
   EntityTypeEnum,
+  RequestTypeEnum,
 } from '../approval-request/approval-request.enum';
 import { plainToInstance } from 'class-transformer';
 
@@ -39,11 +40,13 @@ export class SyllabusesService {
     private readonly approvalRequestRepository: Repository<ApprovalRequestEntity>,
   ) {}
 
-  async create(request: CreateSyllabusRequestDto): Promise<SyllabusEntity> {
+  async create(
+    request: CreateSyllabusRequestDto,
+    approve = false,
+  ): Promise<SyllabusEntity> {
     const existCode = await this.syllabusRepository.findOne({
       where: {
         courseCode: request.courseCode,
-        status: SyllabusStatusEnum.DRAFT,
       },
     });
     if (existCode) {
@@ -110,8 +113,22 @@ export class SyllabusesService {
       );
       syllabus.referenceMaterials = savedReferenceMaterials;
       const result = await queryRunner.manager.save(syllabus);
-      await queryRunner.commitTransaction();
+      if (approve) await queryRunner.commitTransaction();
       // @TODO create approval request
+      else {
+        const approvalRequest = new ApprovalRequestEntity();
+        approvalRequest.entityId = result.id;
+        approvalRequest.entityType = EntityTypeEnum.SYLLABUS;
+        approvalRequest.requestType = RequestTypeEnum.CREATE;
+        approvalRequest.status = ApprovalRequestStatusEnum.PENDING;
+        approvalRequest.draftEntity = plainToInstance(
+          SyllabusResponseDto,
+          result,
+        );
+        approvalRequest.request = request;
+        await queryRunner.rollbackTransaction();
+        await queryRunner.manager.save(approvalRequest);
+      }
       return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -148,6 +165,7 @@ export class SyllabusesService {
   async update(
     id: number,
     request: UpdateSyllabusDto,
+    approve = false,
   ): Promise<ResponseDto<SyllabusResponseDto>> {
     const syllabus = await this.syllabusRepository.findOne({
       where: { id },
@@ -224,7 +242,21 @@ export class SyllabusesService {
       );
       syllabus.referenceMaterials = savedReferenceMaterials;
       const result = await queryRunner.manager.save(newSyllabus);
-      await queryRunner.commitTransaction();
+      if (approve) await queryRunner.commitTransaction();
+      else {
+        const approvalRequest = new ApprovalRequestEntity();
+        approvalRequest.entityId = result.id;
+        approvalRequest.requestType = RequestTypeEnum.UPDATE;
+        approvalRequest.entityType = EntityTypeEnum.SYLLABUS;
+        approvalRequest.status = ApprovalRequestStatusEnum.PENDING;
+        approvalRequest.draftEntity = plainToInstance(
+          SyllabusResponseDto,
+          result,
+        );
+        approvalRequest.request = request;
+        await queryRunner.rollbackTransaction();
+        await queryRunner.manager.save(approvalRequest);
+      }
       return new ResponseBuilder<SyllabusResponseDto>()
         .withCode(HttpStatus.OK)
         .withMessage('Cập nhật thành công')

@@ -12,6 +12,7 @@ import { ApprovalRequestEntity } from './approval-request.entity';
 import {
   ApprovalRequestStatusEnum,
   EntityTypeEnum,
+  RequestTypeEnum,
 } from './approval-request.enum';
 
 @Injectable()
@@ -47,7 +48,16 @@ export class ApprovalRequestService {
     try {
       switch (request.entityType) {
         case EntityTypeEnum.SYLLABUS:
-          this.syllabusService.approve(request.entityId);
+          if (request.requestType === RequestTypeEnum.CREATE) {
+            this.syllabusService.create(request.request as any, true);
+          }
+          if (request.requestType === RequestTypeEnum.UPDATE) {
+            this.syllabusService.update(
+              request.entityId,
+              request.request as any,
+              true,
+            );
+          }
         case EntityTypeEnum.PROGRAM:
         //this.programService.approve(request.entityId);
         default:
