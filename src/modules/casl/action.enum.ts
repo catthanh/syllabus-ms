@@ -3,8 +3,7 @@ export enum ActionEnum {
   Create = 'create',
   Read = 'read',
   Update = 'update',
-  Delete = 'delete',
   Approve = 'approve',
-  Reject = 'reject',
   Hidden = 'hidden',
+  Request = 'request',
 }

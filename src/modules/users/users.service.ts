@@ -25,7 +25,10 @@ export class UsersService {
   ) {}
 
   async getByUsername(username: string): Promise<UserEntity> {
-    const user = await this.usersRepository.findOneBy({ username: username });
+    const user = await this.usersRepository.findOne({
+      where: { username },
+      relations: ['userToDepartments', 'userToDepartments.department'],
+    });
     if (user) {
       return user;
     }
@@ -44,6 +47,15 @@ export class UsersService {
   }
 
   async create(userData: CreateUserDto) {
+    const existUser = await this.usersRepository.findOneBy({
+      username: userData.username,
+    });
+    if (existUser) {
+      throw new HttpException(
+        'Username already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const newUser = this.usersRepository.create(userData);
     await this.usersRepository.save(newUser);
     return newUser;
@@ -99,6 +111,11 @@ export class UsersService {
         case 'department':
           queryBuilder.where('department.name ILIKE :department', {
             department: `%${filter.filterValue}%`,
+          });
+          break;
+        case 'departmentId':
+          queryBuilder.where('department.id ILIKE :departmentId', {
+            departmentId: `%${filter.filterValue}%`,
           });
           break;
         default:

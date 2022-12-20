@@ -2,13 +2,12 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
+  OneToMany,
 } from 'typeorm';
-import { CourseEntity } from '../courses/course.entity';
-import { MajorEntity } from '../majors/major.entity';
+import { CourseGroupEntity } from './entities/course-group.entity';
+import { ProgramStatusEnum } from './programs.constant';
 
 @Entity('programs')
 export class ProgramEntity {
@@ -16,21 +15,49 @@ export class ProgramEntity {
   id: number;
 
   @Column()
-  name: string;
+  vietnameseProgramName: string;
 
   @Column()
-  code: string;
+  englishProgramName: string;
+
+  @Column()
+  degree: string;
+
+  @Column()
+  yearOf: number;
+
+  @Column()
+  englishDegreeName: string;
+
+  @Column()
+  vietnameseDegreeName: string;
+
+  @Column()
+  standardOutput: string;
 
   @Column({
     nullable: true,
   })
   description: string;
 
-  @ManyToOne(() => MajorEntity)
-  major: MajorEntity;
+  @Column()
+  programCode: string;
 
-  @ManyToMany(() => CourseEntity, (course) => course.programs)
-  courses: CourseEntity[];
+  @OneToMany(() => CourseGroupEntity, (courseGroup) => courseGroup.parent, {
+    cascade: true,
+  })
+  groups: CourseGroupEntity[];
+
+  @Column({
+    enum: ProgramStatusEnum,
+    default: ProgramStatusEnum.DRAFT,
+  })
+  status: ProgramStatusEnum;
+
+  @Column({
+    default: false,
+  })
+  isHidden: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

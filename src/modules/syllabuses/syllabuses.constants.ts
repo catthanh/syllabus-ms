@@ -28,7 +28,6 @@ export enum AssessmentMethod {
 }
 
 export enum SyllabusStatusEnum {
-  PENDING,
+  DRAFT,
   APPROVED,
-  REJECTED,
 }

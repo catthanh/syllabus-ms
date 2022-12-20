@@ -1,6 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Expose, Transform, Type } from 'class-transformer';
-import { CourseResponseDto } from '../../../courses/dto/response/cousre.response.dto';
+import { Expose, Type } from 'class-transformer';
 import { DepartmentResponseDto } from '../../../departments/dto/response/department.response.dto';
 import { ReferenceMaterialResponseDto } from '../../../reference-materials/dto/response/reference-material.response.dto';
 import { UserResponseDto } from '../../../users/dto/response/user.response.dto';
@@ -8,7 +7,7 @@ import { CourseOutcomeStandard } from '../../interface/course-outcome-standard.i
 import { CourseSchedule } from '../../interface/course-schedule.interface';
 import { CourseTimeDistribution } from '../../interface/course-time-distribution.interface';
 import { TeachingSchedule } from '../../interface/teaching-schedule.interface';
-import { CourseType } from '../../syllabuses.constants';
+import { CourseType, SyllabusStatusEnum } from '../../syllabuses.constants';
 import {
   AssessmentFormDto,
   CourseOutcomeStandardDto,
@@ -35,12 +34,10 @@ export class SyllabusResponseDto {
 
   @ApiProperty()
   @Expose()
-  @Transform(({ obj }) => obj.course.name)
   courseName: string;
 
   @ApiProperty()
   @Expose()
-  @Transform(({ obj }) => obj.course.code)
   courseCode: string;
 
   @ApiProperty()
@@ -54,9 +51,8 @@ export class SyllabusResponseDto {
 
   @ApiPropertyOptional()
   @Expose()
-  @Transform(({ obj }) => obj.prerequisiteCourses)
-  @Type(() => CourseResponseDto)
-  prerequisite: CourseResponseDto[];
+  @Type(() => SyllabusResponseDto)
+  prerequisiteCourses: SyllabusResponseDto[];
 
   @ApiProperty()
   @Expose()
@@ -124,4 +120,8 @@ export class SyllabusResponseDto {
   @ApiProperty()
   @Expose()
   finalAssessmentSchedule: CourseTestScheduleDto;
+
+  @ApiProperty()
+  @Expose()
+  status: SyllabusStatusEnum;
 }

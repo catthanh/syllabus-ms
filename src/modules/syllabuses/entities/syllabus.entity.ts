@@ -19,8 +19,6 @@ import { TeachingSchedule } from '../interface/teaching-schedule.interface';
 import { CourseType, SyllabusStatusEnum } from '../syllabuses.constants';
 import { CourseTimeDistribution } from '../interface/course-time-distribution.interface';
 import { DepartmentEntity } from '../../departments/department.entity';
-import { CourseEntity } from '../../courses/course.entity';
-import { ApproveTimeline } from '../interface/approve-timeline.interface';
 
 @Entity('syllabuses')
 export class SyllabusEntity {
@@ -34,27 +32,17 @@ export class SyllabusEntity {
   @JoinTable()
   otherLecturers: UserEntity[];
 
-  @ManyToOne(() => CourseEntity, {
-    cascade: true,
-  })
-  course: CourseEntity;
+  @Column()
+  courseCode: string;
 
   @Column()
-  version: number;
-
-  @Column()
-  versionName: string;
-
-  @Column({
-    type: 'jsonb',
-  })
-  approveTimeline: ApproveTimeline;
+  courseName: string;
 
   @Column({
     type: 'enum',
     enum: SyllabusStatusEnum,
   })
-  status: number;
+  status: SyllabusStatusEnum;
 
   @Column({
     type: 'boolean',
@@ -71,9 +59,11 @@ export class SyllabusEntity {
   })
   courseTimeDistribution: CourseTimeDistribution;
 
-  @ManyToMany(() => CourseEntity)
+  @ManyToMany(() => SyllabusEntity, {
+    cascade: true,
+  })
   @JoinTable()
-  prerequisiteCourses: CourseEntity[];
+  prerequisiteCourses: SyllabusEntity[];
 
   @Column({
     type: 'enum',

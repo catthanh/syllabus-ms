@@ -110,18 +110,10 @@ export class CreateSyllabusRequestDto {
   otherLecturerIds: number[];
 
   @ApiPropertyOptional()
-  @IsInt()
-  @IsOptional()
-  courseId: number;
-
-  @ApiPropertyOptional()
-  @IsString()
-  @IsOptional()
   courseName: string;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @IsString()
-  @IsOptional()
   courseCode: string;
 
   @ApiProperty()

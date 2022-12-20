@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
@@ -70,23 +71,23 @@ export class SyllabusesController {
     return this.syllabusesService.update(id, body);
   }
 
-  @ApiOperation({
-    summary: 'Xóa đề cương',
-    tags: ['Syllabuses'],
-  })
-  @Delete(':id/delete')
-  delete(@Param('id', ParseIntPipe) id: number) {
-    return this.syllabusesService.delete(id);
-  }
+  // @ApiOperation({
+  //   summary: 'Xóa đề cương',
+  //   tags: ['Syllabuses'],
+  // })
+  // @Delete(':id/delete')
+  // delete(@Param('id', ParseIntPipe) id: number) {
+  //   return this.syllabusesService.delete(id);
+  // }
 
-  @ApiOperation({
-    summary: 'Duyệt đề cương',
-    tags: ['Syllabuses'],
-  })
-  @Patch(':id/approve')
-  approve(@Param('id', ParseIntPipe) id: number) {
-    return this.syllabusesService.approve(id);
-  }
+  // @ApiOperation({
+  //   summary: 'Duyệt đề cương',
+  //   tags: ['Syllabuses'],
+  // })
+  // @Patch(':id/approve')
+  // approve(@Param('id', ParseIntPipe) id: number) {
+  //   return this.syllabusesService.approve(id);
+  // }
 
   @ApiOperation({
     summary: 'Ẩn đề cương',
@@ -95,5 +96,31 @@ export class SyllabusesController {
   @Patch(':id/hide')
   hide(@Param('id', ParseIntPipe) id: number) {
     return this.syllabusesService.hide(id);
+  }
+
+  @ApiOperation({
+    summary: 'Hiện đề cương',
+    tags: ['Syllabuses'],
+  })
+  @Patch(':id/show')
+  show(@Param('id', ParseIntPipe) id: number) {
+    return this.syllabusesService.show(id);
+  }
+
+  @ApiOperation({
+    summary: 'Tao yeu cau duyet de cuong',
+    tags: ['Syllabuses', 'Approval Requests'],
+  })
+  @Patch(':id/create-approval-request')
+  async createRequest(@Param('id', ParseIntPipe) id: number, @Req() request) {
+    const result = await this.syllabusesService.createApprovalRequest(
+      id,
+      request.user,
+    );
+    return new ResponseBuilder<SyllabusResponseDto>()
+      .withCode(HttpStatus.CREATED)
+      .withMessage('Tạo thành công')
+      .withData(result, SyllabusResponseDto)
+      .build();
   }
 }

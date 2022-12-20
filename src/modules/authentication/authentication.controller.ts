@@ -41,7 +41,7 @@ export class AuthenticationController {
   @Post('log-in')
   async logIn(@Req() request: AuthenticatedRequest) {
     const { user } = request;
-    const accessToken = this.authenticationService.signJwtToken(user.id);
+    const accessToken = this.authenticationService.signJwtToken(user);
     return new ResponseBuilder()
       .withCode(HttpStatus.OK)
       .withMessage('Login successfully')

@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { TokenPayload } from './interface/token-payload.interface';
 import { PostgresErrorCode } from '@common/constants/postgresErrorCodes.enum';
+import { UserResponseDto } from '../users/dto/response/user.response.dto';
 @Injectable()
 export class AuthenticationService {
   constructor(
@@ -70,8 +71,8 @@ export class AuthenticationService {
     }
   }
 
-  public signJwtToken(userId: number) {
-    const payload: TokenPayload = { userId };
+  public signJwtToken(user: UserResponseDto) {
+    const payload: TokenPayload = { userId: user.id, ...user };
     const token = this.jwtService.sign(payload);
     console.log(token);
     return token;
