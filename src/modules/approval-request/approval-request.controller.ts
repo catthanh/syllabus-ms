@@ -46,7 +46,7 @@ export class ApprovalRequestController {
     summary: 'Từ chối yêu cầu',
   })
   async reject(@Req() request: any) {
-    const result = await this.approvalRequestService.approve(
+    const result = await this.approvalRequestService.reject(
       request.params.id,
       request.user,
       request.body?.comment,

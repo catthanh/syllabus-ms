@@ -34,13 +34,12 @@ export class ProgramsService {
     const existProgram = await this.programRepository.find({
       where: {
         programCode: request.programCode,
-        status: ProgramStatusEnum.DRAFT,
       },
     });
 
     if (existProgram.length > 0) {
       throw new HttpException(
-        'Bản nháp của chương trình đã tồn tại',
+        'Mã chương trình đã tồn tại',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -65,6 +64,8 @@ export class ProgramsService {
         id: In(uniq(courseIds)),
       },
     });
+    console.log('aaaaaaaaaaaaaaa');
+
     if (existCourses.length !== uniq(courseIds).length) {
       throw new NotFoundException('Không tìm thấy môn học');
     }
@@ -77,7 +78,9 @@ export class ProgramsService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.startTransaction();
     try {
+      console.log('sasaassssssssssssssssssssss');
       const tempProgram = await queryRunner.manager.save(program);
+      console.log('sasaassssssssssssssssssssss');
       const queue = [request.groups];
       const courseGroupEntitiesByLevel = [];
       const courseGroupParentByLevel = [];
