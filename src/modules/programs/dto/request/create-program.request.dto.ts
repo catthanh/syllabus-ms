@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsInt,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class Course {
   @IsInt()
@@ -11,6 +17,7 @@ export class Course {
 export class CourseGroupRequestDto {
   @IsInt()
   @ApiProperty()
+  @IsOptional()
   id?: number;
 
   @IsString()
@@ -23,8 +30,7 @@ export class CourseGroupRequestDto {
 
   @ApiProperty()
   @Type(() => Course)
-  @IsArray()
-  @ValidateNested({ each: true })
+  @IsOptional()
   courses: Course[];
 }
 
@@ -63,7 +69,5 @@ export class CreateProgramRequestDto {
 
   @ApiProperty()
   @Type(() => CourseGroupRequestDto)
-  @IsArray()
-  @ValidateNested({ each: true })
   groups: CourseGroupRequestDto[];
 }
