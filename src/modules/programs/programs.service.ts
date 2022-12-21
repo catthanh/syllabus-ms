@@ -158,7 +158,7 @@ export class ProgramsService {
     while (queue.length) {
       const courseGroup = queue.shift();
       if (courseGroup.courses) {
-        courseIds.push(...courseGroup.courses.map((course) => course.id));
+        courseIds.push(...courseGroup.courses?.map((course) => course.id));
       }
       if (courseGroup.groups) {
         queue.push(...courseGroup.groups);
