@@ -93,7 +93,7 @@ export class ProgramsService {
             name: courseGroup.name,
             program: tempProgram,
           });
-          courseGroupEntity.courses = courseGroup.courses.map(
+          courseGroupEntity.courses = courseGroup.courses?.map(
             (course) => existCoursesMap[course.id],
           );
           courseGroupEntity.parent =
@@ -263,7 +263,11 @@ export class ProgramsService {
   async get(id: number) {
     const program = await this.programRepository.findOne({
       where: { id },
-      relations: ['groups', 'groups.courses',  'groups.courses.prerequisiteCourses'],
+      relations: [
+        'groups',
+        'groups.courses',
+        'groups.courses.prerequisiteCourses',
+      ],
     });
     const roots = program.groups;
     const trees = await Promise.all(
